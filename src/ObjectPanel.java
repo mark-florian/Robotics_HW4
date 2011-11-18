@@ -12,6 +12,7 @@ public class ObjectPanel extends JPanel
 	private Obstacle[] obs = new Obstacle[PathPlan.NUM_OBS];
 	private Vertex[] start = new Vertex[2];	// Start/end point
 	private boolean grown = false;
+	private ArrayList<Segment> segments = new ArrayList<Segment>();
 		
 	public ObjectPanel(Obstacle[] o, Vertex[] s, boolean g)
 	{
@@ -20,6 +21,17 @@ public class ObjectPanel extends JPanel
 		setBackground(Color.white);
 		setForeground(Color.black);
 		grown = g;
+		segments = null;
+	}
+	
+	public ObjectPanel(Obstacle[] o, Vertex[] s, boolean g, ArrayList<Segment> segs)
+	{
+		obs = o;
+		start = s;
+		setBackground(Color.white);
+		setForeground(Color.black);
+		grown = g;
+		segments = segs;
 	}
 	
 	protected void paintComponent(Graphics g)
@@ -85,6 +97,16 @@ public class ObjectPanel extends JPanel
 					y2 = s[j].getY2() * Y_SCALE + OFFSET;
 					g.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
 				}
+			}
+		}
+		
+		if(segments != null) {
+			for(int i=0; i<segments.size(); i++) {
+				x1 = segments.get(i).getX1() * X_SCALE + OFFSET;
+				y1 = segments.get(i).getY1() * Y_SCALE + OFFSET;
+				x2 = segments.get(i).getX2() * X_SCALE + OFFSET;
+				y2 = segments.get(i).getY2() * Y_SCALE + OFFSET;
+				g.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
 			}
 		}
 	}
