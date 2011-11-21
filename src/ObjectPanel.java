@@ -12,7 +12,8 @@ public class ObjectPanel extends JPanel
 	private Obstacle[] obs = new Obstacle[PathPlan.NUM_OBS];
 	private Vertex[] start = new Vertex[2];	// Start/end point
 	private boolean grown = false;
-	private ArrayList<Segment> segments = new ArrayList<Segment>();
+	private ArrayList<Segment> segments;
+	private ArrayList<Segment> bestPath;
 		
 	public ObjectPanel(Obstacle[] o, Vertex[] s, boolean g)
 	{
@@ -22,6 +23,7 @@ public class ObjectPanel extends JPanel
 		setForeground(Color.black);
 		grown = g;
 		segments = null;
+		bestPath = null;
 	}
 	
 	public ObjectPanel(Obstacle[] o, Vertex[] s, boolean g, ArrayList<Segment> segs)
@@ -32,6 +34,18 @@ public class ObjectPanel extends JPanel
 		setForeground(Color.black);
 		grown = g;
 		segments = segs;
+		bestPath = null;
+	}
+	
+	public ObjectPanel(Obstacle[] o, Vertex[] s, boolean g, ArrayList<Segment> segs, ArrayList<Segment> best)
+	{
+		obs = o;
+		start = s;
+		setBackground(Color.white);
+		setForeground(Color.black);
+		grown = g;
+		segments = segs;
+		bestPath = best;
 	}
 	
 	protected void paintComponent(Graphics g)
@@ -108,6 +122,17 @@ public class ObjectPanel extends JPanel
 				y1 = segments.get(i).getY1() * Y_SCALE + OFFSET;
 				x2 = segments.get(i).getX2() * X_SCALE + OFFSET;
 				y2 = segments.get(i).getY2() * Y_SCALE + OFFSET;
+				g.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
+			}
+		}
+		
+		if(bestPath != null) {
+			g.setColor(Color.GREEN);
+			for(int i=0; i<bestPath.size(); i++) {
+				x1 = bestPath.get(i).getX1() * X_SCALE + OFFSET;
+				y1 = bestPath.get(i).getY1() * Y_SCALE + OFFSET;
+				x2 = bestPath.get(i).getX2() * X_SCALE + OFFSET;
+				y2 = bestPath.get(i).getY2() * Y_SCALE + OFFSET;
 				g.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
 			}
 		}

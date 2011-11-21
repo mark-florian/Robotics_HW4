@@ -219,9 +219,11 @@ public class PathPlan extends JPanel implements ActionListener
 			for(int i=0; i<vertices.size(); i++) {
 				Vertex node = vertices.get(i);
 				for(int j=i+1; j<vertices.size(); j++) {
-					if(vertices.get(i).getSet() != vertices.get(j).getSet() || vertices.get(i).sameLine(vertices.get(j))) {
+					Vertex otherNode = vertices.get(j);
+//					if(vertices.get(i).getSet() != vertices.get(j).getSet() || vertices.get(i).sameLine(vertices.get(j))) {
+					if(node.getSet() != otherNode.getSet() || node.sameLine(otherNode)) {
 						boolean intersects = false;
-						Segment pointSeg = new Segment(vertices.get(i), vertices.get(j));
+						Segment pointSeg = new Segment(node, otherNode);
 						for(int k=0; k<segments.size(); k++) {
 							if(pointSeg.intersects(segments.get(k))) {
 								intersects = true;
@@ -231,6 +233,8 @@ public class PathPlan extends JPanel implements ActionListener
 						if (!intersects) {
 							safePath.add(pointSeg);
 							node.addAdjacentSeg(pointSeg);
+							node.addNeighbor(otherNode);
+							otherNode.addNeighbor(node);
 						}
 					}
 				}
@@ -244,32 +248,82 @@ public class PathPlan extends JPanel implements ActionListener
 		}
 		if (e.getSource().equals(safePath)) {
 			Vertex current = nodes.get(0);
-//			current.setVisited(true);
+			current.setVisited(true);
 			current.setMinDistance(0);
+			ArrayList<Vertex> sourceNeighbors = current.getNeighbors();
+			for(Vertex v : sourceNeighbors) {
+				v.setMinDistance(getDist(current, v));
+				v.setMinNode(current);
+			}
 			
-//			ArrayList<Vertex> unvisited = new ArrayList<Vertex>();
-			for(int i=1; i<nodes.size(); i++)
-				unvisited.add(nodes.get(i));
+			Dijkstra(current);
 			
-			while(unvisited.size() > 0) {
-				ArrayList<Segment> neighbors = current.getAdjacentSegs();
-				for(int i=0; i<neighbors.size(); i++) {
-					// Operate on non-current node
-					Vertex other;
-					if(neighbors.get(i).getV1() == current)
-						other = neighbors.get(i).getV2();
-					else
-						other = neighbors.get(i).getV1();
-					
-					other.setMinDistance(neighbors.get(i).getWeight());
-					
-//					if(!neighbors.get(i).isVisited())
+			for(Vertex v : nodes)
+				System.out.println(v.getMinDistance());
+			
+			Vertex start = nodes.get(0);	// Start node
+			Vertex v = nodes.get(1);	// Goal node
+			ArrayList<Segment> bestPath = new ArrayList<Segment>();
+			System.out.println("before segs");
+			while(v != start) {
+				bestPath.add(new Segment(v, v.getMinNode()));
+				v = v.getMinNode();
+			}
+			System.out.println("before segs");
+			
+			// Draw best path
+			JPanel grownPanel = new ObjectPanel(obstacles, startFinish, true, null, bestPath);
+			frame.add(grownPanel, BorderLayout.CENTER);
+			frame.setVisible(true);
+		}
+	}
+	
+	private void Dijkstra(Vertex source) {
+		while(nodesAreUnvisited()) {
+			// Find closest vertex that is unvisited
+			Vertex current = getClosestUnvisited();
+			current.setVisited(true);
+			ArrayList<Vertex> neighbors = current.getUnvisitedNeighbors();
+			for(Vertex v : neighbors) {
+				double distSV = current.getMinDistance();
+//				double distSV = getDist(source, current);
+				double distVW = getDist(current, v);
+				double distSW = getDist(source, v);
+				
+				if((distSV + distVW) < distSW) {
+					System.out.println(distSV + distVW);
+					v.setMinDistance(distSV + distVW);
+					v.setMinNode(current);
 				}
-				current.setVisited(true);
-				unvisited.remove(current);
-				current = getMinFromUnvisited();
 			}
 		}
+	}
+	
+	private boolean nodesAreUnvisited() {
+		for(Vertex v : nodes)
+			if(!v.isVisited())
+				return true;
+		return false;
+	}
+	
+	private double getDist(Vertex v1, Vertex v2) {
+		if(!v1.hasNeighbor(v2))
+			return 9999999;
+		return Math.sqrt(Math.pow(v2.getX()-v1.getX(),2) + Math.pow(v2.getY()-v1.getY(),2));
+	}
+	
+	private Vertex getClosestUnvisited() {
+		double dist = 9999999;
+		Vertex ret = null;
+		for(Vertex v : nodes) {
+			if(!v.isVisited()) {
+				if(v.getMinDistance() < dist) {
+					ret = v;
+					dist = v.getMinDistance();
+				}
+			}
+		}
+		return ret;
 	}
 	
 	private Vertex getMinFromUnvisited() {
