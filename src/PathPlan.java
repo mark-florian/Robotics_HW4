@@ -89,7 +89,7 @@ public class PathPlan extends JPanel implements ActionListener
 		// Read in file
 		try
 		{
-			FileInputStream fis = new FileInputStream("obstacles.txt");
+			FileInputStream fis = new FileInputStream("obstacles2.txt");
 			DataInputStream dis = new DataInputStream(fis);
 			BufferedReader br = new BufferedReader(new InputStreamReader(dis));
 			
@@ -105,7 +105,7 @@ public class PathPlan extends JPanel implements ActionListener
 				
 				for(int j=0; j<vertices; j++) {
 					String[] point = br.readLine().split(regex);
-					verts[j] = new Vertex(Double.parseDouble(point[0]), Double.parseDouble(point[1]));
+					verts[j] = new Vertex(Double.parseDouble(point[0]), Double.parseDouble(point[1]), i);
 				}
 				obstacles[i] = new Obstacle(verts);
 				i++;
@@ -132,8 +132,8 @@ public class PathPlan extends JPanel implements ActionListener
 			String[] v1 = br.readLine().split(regex);
 			String[] v2 = br.readLine().split(regex);
 			
-			startFinish[0] = new Vertex(Double.parseDouble(v1[0]), Double.parseDouble(v1[1]));
-			startFinish[1] = new Vertex(Double.parseDouble(v2[0]), Double.parseDouble(v2[1]));
+			startFinish[0] = new Vertex(Double.parseDouble(v1[0]), Double.parseDouble(v1[1]), -1);
+			startFinish[1] = new Vertex(Double.parseDouble(v2[0]), Double.parseDouble(v2[1]), -2);
 			
 			fis.close();
 			dis.close();
@@ -172,19 +172,19 @@ public class PathPlan extends JPanel implements ActionListener
 				
 				for(int j=0; j<v.length; j++) {
 					set.add(v[j]);
-					set.add(new Vertex(v[j].getX()-oEdge, v[j].getY()));
-					set.add(new Vertex(v[j].getX()-oMed, v[j].getY()-oSmall));
-					set.add(new Vertex(v[j].getX()-oMed, v[j].getY()-oMed));
-					set.add(new Vertex(v[j].getX()-oEdge, v[j].getY()-oLarge));
-					set.add(new Vertex(v[j].getX(), v[j].getY()-oLarge));
-					set.add(new Vertex(v[j].getX()+oSmall, v[j].getY()-oMed));
-					set.add(new Vertex(v[j].getX()+oSmall, v[j].getY()-oSmall));
+					set.add(new Vertex(v[j].getX()-oEdge, v[j].getY(), i));
+					set.add(new Vertex(v[j].getX()-oMed, v[j].getY()-oSmall, i));
+					set.add(new Vertex(v[j].getX()-oMed, v[j].getY()-oMed, i));
+					set.add(new Vertex(v[j].getX()-oEdge, v[j].getY()-oLarge, i));
+					set.add(new Vertex(v[j].getX(), v[j].getY()-oLarge, i));
+					set.add(new Vertex(v[j].getX()+oSmall, v[j].getY()-oMed, i));
+					set.add(new Vertex(v[j].getX()+oSmall, v[j].getY()-oSmall, i));
 				}
 				
 				/* Now we have a new set of points for one obstacle
 				 * Now, get convex hull!
 				 */
-				obstacles[i].setGrownVerts(Utilities.getConvexHull(set));
+				obstacles[i].setGrownVerts(Utilities.getConvexHull(set), i);
 			}
 			
 			// Draw connected map
@@ -206,17 +206,25 @@ public class PathPlan extends JPanel implements ActionListener
 				for(Segment s : segs)
 					segments.add(s);
 			}
+			// We have to also add boundaries to intersecting segments
+			for(Segment s : obstacles[0].getSegments())
+				segments.add(s);
 			
 			ArrayList<Segment> safePath = new ArrayList<Segment>();
 			
 			// For every vertex pair, check for intersection
 			for(int i=0; i<vertices.size(); i++) {
 				for(int j=i+1; j<vertices.size(); j++) {
-					for(int k=0; k<segments.size(); k++) {
+					if(vertices.get(i).getSet() != vertices.get(j).getSet()) {
+						boolean intersects = false;
 						Segment pointSeg = new Segment(vertices.get(i), vertices.get(j));
-						if(pointSeg.intersects(segments.get(k)))
-							break;
-						else
+						for(int k=0; k<segments.size(); k++) {
+							if(pointSeg.intersects(segments.get(k))) {
+								intersects = true;
+								break;
+							}
+						}
+						if (!intersects)
 							safePath.add(pointSeg);
 					}
 				}

@@ -4,6 +4,7 @@ public class Obstacle {
 	private Vertex[] grownVertices;
 	private Segment[] segments;
 	private Segment[] grownSegments;
+	private int set;	// This distinguished obstacles from others (used for disjoint set)
 
 	public Obstacle(Vertex[] v)
 	{
@@ -14,11 +15,12 @@ public class Obstacle {
 		setSegments(v);
 	}
 	
-	public void setGrownVerts(Vertex[] v)
+	public void setGrownVerts(Vertex[] v, int s)
 	{
 		grownVertices = v;
 		grownSegments = new Segment[v.length];
 		setGrownSegments(v);
+		set = s;
 	}
 	
 	/*

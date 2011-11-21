@@ -18,7 +18,7 @@ public class Utilities {
 					v0 = set.get(i);
 		}
 		
-		// Find angle between each point and p0
+		// Find angle between each point and v0
 		for(int i=0; i<set.size(); i++)
 			set.get(i).setAngle(getAngle(v0, set.get(i)));
 		
@@ -28,7 +28,7 @@ public class Utilities {
 		// Check for points with same angle, if found, give priority to closer point
 		for(int i=1; i<set.size()-1; i++) {
 			if(set.get(i).getAngle() == set.get(i+1).getAngle())
-				if(getDist(set.get(0),set.get(i)) < getDist(set.get(0),set.get(i)))
+				if(getDist(set.get(0),set.get(i)) > getDist(set.get(0),set.get(i+1)))
 				{
 					// Swap points
 					Vertex v1 = set.get(i);
