@@ -87,6 +87,7 @@ public class ObjectPanel extends JPanel
 		/* Draw grown set if it exists */
 		if(grown == true)
 		{
+			g.setColor(Color.BLUE);
 			for(int i=1; i<obs.length; i++) {
 				Obstacle o = obs[i];
 				Segment[] s = o.getGrownSegments();
@@ -101,6 +102,7 @@ public class ObjectPanel extends JPanel
 		}
 		
 		if(segments != null) {
+			g.setColor(Color.RED);
 			for(int i=0; i<segments.size(); i++) {
 				x1 = segments.get(i).getX1() * X_SCALE + OFFSET;
 				y1 = segments.get(i).getY1() * Y_SCALE + OFFSET;

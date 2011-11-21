@@ -7,6 +7,7 @@ public class Segment {
 	private double yPos1;
 	private double xPos2;
 	private double yPos2;
+	private double weight;
 	
 	public Segment(Vertex ver1, Vertex ver2) {
 		v1 = ver1;
@@ -15,6 +16,7 @@ public class Segment {
 		yPos1 = v1.getY();
 		xPos2 = v2.getX();
 		yPos2 = v2.getY();
+		weight = Math.sqrt(Math.pow(xPos2-xPos1,2) + Math.pow(yPos2-yPos1,2));
 	}
 	
 	public Segment(double x1, double y1, double x2, double y2) {
@@ -43,6 +45,9 @@ public class Segment {
 	}
 	public Vertex getV2() {
 		return v2;
+	}
+	public double getWeight() {
+		return weight;
 	}
 	
 	public double getSlope() {

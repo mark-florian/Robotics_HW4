@@ -13,6 +13,9 @@ public class PathPlan extends JPanel implements ActionListener
 	public static int NUM_OBS;
 	private static Obstacle[] obstacles;
 	private static Vertex[] startFinish = new Vertex[2];
+	private static ArrayList<Vertex> nodes = new ArrayList<Vertex>();
+	private static ArrayList<Vertex> unvisited = new ArrayList<Vertex>();
+	
 	public static double FRAME_WIDTH;
 	public static double FRAME_HEIGHT;
 	
@@ -89,7 +92,7 @@ public class PathPlan extends JPanel implements ActionListener
 		// Read in file
 		try
 		{
-			FileInputStream fis = new FileInputStream("obstacles2.txt");
+			FileInputStream fis = new FileInputStream("test.txt");
 			DataInputStream dis = new DataInputStream(fis);
 			BufferedReader br = new BufferedReader(new InputStreamReader(dis));
 			
@@ -214,8 +217,9 @@ public class PathPlan extends JPanel implements ActionListener
 			
 			// For every vertex pair, check for intersection
 			for(int i=0; i<vertices.size(); i++) {
+				Vertex node = vertices.get(i);
 				for(int j=i+1; j<vertices.size(); j++) {
-					if(vertices.get(i).getSet() != vertices.get(j).getSet()) {
+					if(vertices.get(i).getSet() != vertices.get(j).getSet() || vertices.get(i).sameLine(vertices.get(j))) {
 						boolean intersects = false;
 						Segment pointSeg = new Segment(vertices.get(i), vertices.get(j));
 						for(int k=0; k<segments.size(); k++) {
@@ -224,10 +228,13 @@ public class PathPlan extends JPanel implements ActionListener
 								break;
 							}
 						}
-						if (!intersects)
+						if (!intersects) {
 							safePath.add(pointSeg);
+							node.addAdjacentSeg(pointSeg);
+						}
 					}
 				}
+				nodes.add(node);
 			}
 			
 			// Draw visibility map
@@ -235,5 +242,44 @@ public class PathPlan extends JPanel implements ActionListener
 			frame.add(grownPanel, BorderLayout.CENTER);
 			frame.setVisible(true);
 		}
+		if (e.getSource().equals(safePath)) {
+			Vertex current = nodes.get(0);
+//			current.setVisited(true);
+			current.setMinDistance(0);
+			
+//			ArrayList<Vertex> unvisited = new ArrayList<Vertex>();
+			for(int i=1; i<nodes.size(); i++)
+				unvisited.add(nodes.get(i));
+			
+			while(unvisited.size() > 0) {
+				ArrayList<Segment> neighbors = current.getAdjacentSegs();
+				for(int i=0; i<neighbors.size(); i++) {
+					// Operate on non-current node
+					Vertex other;
+					if(neighbors.get(i).getV1() == current)
+						other = neighbors.get(i).getV2();
+					else
+						other = neighbors.get(i).getV1();
+					
+					other.setMinDistance(neighbors.get(i).getWeight());
+					
+//					if(!neighbors.get(i).isVisited())
+				}
+				current.setVisited(true);
+				unvisited.remove(current);
+				current = getMinFromUnvisited();
+			}
+		}
+	}
+	
+	private Vertex getMinFromUnvisited() {
+		double min = 9999999;
+		Vertex ret = null;
+		for(Vertex v : unvisited)
+			if(v.getMinDistance() < min) {
+				min = v.getMinDistance();
+				ret = v;
+			}
+		return ret;
 	}
 }
